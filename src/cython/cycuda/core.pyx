@@ -61,6 +61,7 @@ cdef inline CudaSafeCall(libcuda.CUresult result):
 #
 ###############################################################################
 
+# ------------------------------------------------------------------------------
 cdef LLContext _LLContext_factory(LLDevice device, unsigned int flags, bint opengl):
     cdef libcuda.CUcontext handle
     if opengl:
@@ -73,7 +74,9 @@ cdef LLContext _LLContext_factory(LLDevice device, unsigned int flags, bint open
     ctx._dev = device
 
     return ctx
+# ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
 cdef LLStream _LLStream_factory(LLContext context, unsigned int flags):
     cdef libcuda.CUstream handle
     CudaSafeCall(libcuda.cuStreamCreate(&handle, flags))
@@ -83,6 +86,33 @@ cdef LLStream _LLStream_factory(LLContext context, unsigned int flags):
     stream._ctx = context
 
     return stream
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+cdef LLDeviceBuffer _LLDeviceBuffer_factory(LLContext context, unsigned int size):
+    cdef libcuda.CUdeviceptr handle
+    CudaSafeCall(libcuda.cuMemAlloc(&handle, size))
+
+    cdef LLDeviceBuffer buf = LLDeviceBuffer.__new__(LLDeviceBuffer)
+    buf._handle = handle
+    buf._ctx = context
+    buf._size = size
+
+    return buf
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+cdef LLHostBuffer _LLHostBuffer_factory(LLContext context, unsigned int size):
+    cdef void *handle
+    CudaSafeCall(libcuda.cuMemAllocHost(&handle, size))
+
+    cdef LLHostBuffer buf = LLHostBuffer.__new__(LLHostBuffer)
+    buf._handle = handle
+    buf._ctx = context
+    buf._size = size
+
+    return buf
+# ------------------------------------------------------------------------------
 
 cpdef init(unsigned int flags = 0):
     libcuda.cuInit(flags)
@@ -132,6 +162,13 @@ class Context(object):
         """
         """
         return Stream(self, flags)
+
+    def alloc(self, size):
+        return DeviceBuffer(self, size)
+
+    def alloc_host(self, size):
+        return HostBuffer(self, size)
+
 
 ###############################################################################
 #
@@ -239,7 +276,7 @@ class Stream(object):
         """
         """
         cdef LLStream stream = self.__stream__
-        stream.synchronize()
+        stream_synchronize(stream._handle)
 
     def enqueue(self, LLCommand cmd):
         """
@@ -257,6 +294,45 @@ cdef class LLCommand(object):
     cdef void __exec__(self, LLStream stream) except *:
         raise RuntimeError("Empty Command")
 
+#######################################
+#
+# Buffer Section
+#
+#######################################
+
+cdef class LLBuffer(object):
+    cdef libcuda.CUdeviceptr device(self) except *:
+        raise RuntimeError("Empty Buffer")
+
+cdef class LLDeviceBuffer(object):
+    cdef libcuda.CUdeviceptr device(self) except *:
+        return self._handle
+
+    def __dealloc__(self):
+        libcuda.cuMemFree(self._handle)
+
+cdef class LLHostBuffer(object):
+    cdef libcuda.CUdeviceptr device(self) except *:
+        cdef libcuda.CUdeviceptr ptr
+        CudaSafeCall(libcuda.cuMemHostGetDevicePointer(&ptr, self._handle, 0))
+        return ptr
+
+    def __dealloc__(self):
+        libcuda.cuMemFreeHost(self._handle)
+
+class DeviceBuffer(object):
+    def __init__(self, context, unsigned int size):
+        cdef LLContext ctx = context.__ctx__
+        assert_active_context(ctx._handle)
+        cdef LLDeviceBuffer buf = _LLDeviceBuffer_factory(ctx, size)
+        self.__buffer__ = buf
+
+class HostBuffer(object):
+    def __init__(self, context, unsigned int size):
+        cdef LLContext ctx = context.__ctx__
+        assert_active_context(ctx._handle)
+        cdef LLHostBuffer buf = _LLHostBuffer_factory(ctx, size)
+        self.__buffer__ = buf
 
 
 #######################################

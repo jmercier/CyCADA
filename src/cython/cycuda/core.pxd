@@ -14,6 +14,18 @@ cdef class LLStream(object):
 cdef class LLCommand(object):
     cdef void __exec__(self, LLStream stream) except *
 
+cdef class LLBuffer(object):
+    cdef LLContext _ctx
+    cdef unsigned int _size
+
+    cdef libcuda.CUdeviceptr device(self) except *
+
+cdef class LLDeviceBuffer(LLBuffer):
+    cdef libcuda.CUdeviceptr _handle
+
+cdef class LLHostBuffer(LLBuffer):
+    cdef void * _handle
+
 cdef int get_device_attribute(libcuda.CUdevice dev, libcuda.CUdevice_attribute att) except *
 cdef bytes get_device_name(libcuda.CUdevice dev)
 cdef tuple get_device_capability(libcuda.CUdevice dev)

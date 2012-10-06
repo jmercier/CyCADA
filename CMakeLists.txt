@@ -11,12 +11,15 @@ set (CMAKE_C_FLAGS "-O3 -DNDEBUG")
 
 FIND_PACKAGE(Cython REQUIRED)
 FIND_PACKAGE(CUDA REQUIRED)
+FIND_PACKAGE(PythonInterp 2.7 COMPONENTS numpy REQUIRED)
 
 SET (CyCuda_MODULE_SRCS "${CyCuda_SOURCE_DIR}/src/cycuda/__init__.py")
 SET (CMAKE_C_FLAGS  "-Wall -Wno-unused-value -Wno-unused-function")
 
 set (CYTHON_FLAGS -I${PROJECT_SOURCE_DIR}/src/cython/)
-INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} )
+
+# SHOULD FIND A BETTER WAY TO FIND THIS DIRECTORY
+INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS}  /usr/lib/python2.7/site-packages/numpy/core/include/)
 
 #CYTHON_ADD_MODULE(cycuda/core core  core.c)
 #CYTHON_ADD_MODULE(cycuda/fft fft fft.c)
@@ -36,7 +39,7 @@ SET_TARGET_PROPERTIES(cycuda/core PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE
 
 CYTHON_ADD_MODULE(cycuda/numpycmd ${PROJECT_SOURCE_DIR}/src/cython/cycuda/numpycmd.pyx)
 TARGET_LINK_LIBRARIES(cycuda/numpycmd "cuda")
-SET_TARGET_PROPERTIES(cycuda/numpycmd PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE_DIRS}")
+
 
 set(CyCuda_MODULE "")
 FOREACH(infile ${CyCuda_MODULE_SRCS})
