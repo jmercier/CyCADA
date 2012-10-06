@@ -13,9 +13,9 @@ FIND_PACKAGE(Cython REQUIRED)
 FIND_PACKAGE(CUDA REQUIRED)
 
 SET (CyCuda_MODULE_SRCS "${CyCuda_SOURCE_DIR}/src/cycuda/__init__.py")
-SET (CMAKE_C_FLAGS                "-Wall -Wno-unused-value -Wno-unused-function")
+SET (CMAKE_C_FLAGS  "-Wall -Wno-unused-value -Wno-unused-function")
 
-set (CYTHON_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/cython/ -I${CUDA_INCLUDE_DIRS})
+set (CYTHON_FLAGS -I${PROJECT_SOURCE_DIR}/src/cython/)
 INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} )
 
 #CYTHON_ADD_MODULE(cycuda/core core  core.c)
@@ -24,13 +24,19 @@ INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} )
 
 #add_custom_target(cycuda COMMAND cp -r ${PROJECT_SOURCE_DIR}/cycuda cycuda DEPENDS ${CyCuda_MODULE})
 
-#TARGET_LINK_LIBRARIES(core "cuda")
-#SET_TARGET_PROPERTIES(core PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE_DIRS}")
-#ADD_DEPENDENCIES(core cycuda)
+
 
 #TARGET_LINK_LIBRARIES(cycuda/garray "cuda")
 #SET_TARGET_PROPERTIES(cycuda/garray PROPERTIES LINK_FLAGS "-L/usr/lib/nvidia-current")
 #ADD_DEPENDENCIES(cycuda/garray cycuda)
+
+CYTHON_ADD_MODULE(cycuda/core ${PROJECT_SOURCE_DIR}/src/cython/cycuda/core.pyx)
+TARGET_LINK_LIBRARIES(cycuda/core "cuda")
+SET_TARGET_PROPERTIES(cycuda/core PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE_DIRS}")
+
+CYTHON_ADD_MODULE(cycuda/numpycmd ${PROJECT_SOURCE_DIR}/src/cython/cycuda/numpycmd.pyx)
+TARGET_LINK_LIBRARIES(cycuda/numpycmd "cuda")
+SET_TARGET_PROPERTIES(cycuda/numpycmd PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE_DIRS}")
 
 set(CyCuda_MODULE "")
 FOREACH(infile ${CyCuda_MODULE_SRCS})
@@ -42,12 +48,10 @@ FOREACH(infile ${CyCuda_MODULE_SRCS})
         MAIN_DEPENDENCY ${infile})
     LIST(APPEND CyCuda_MODULE ${outfile})
 ENDFOREACH(infile ${CyCuda_MODULE})
-ADD_CUSTOM_TARGET(cycuda DEPENDS ${CyCuda_MODULE})
+ADD_CUSTOM_TARGET(cy DEPENDS ${CyCuda_MODULE})
 
-
-
-CYTHON_ADD_MODULE(cycuda/core ${PROJECT_SOURCE_DIR}/src/cython/cycuda/core.pyx)
-ADD_DEPENDENCIES(cycuda/core cycuda)
+ADD_DEPENDENCIES(cycuda/core cy)
+ADD_DEPENDENCIES(cycuda/numpycmd cy)
 
 
 #PYTHON_ADD_MODULE(cycuda ${PROJECT_SOURCE_DIR}/src/cycuda/__init__.py)

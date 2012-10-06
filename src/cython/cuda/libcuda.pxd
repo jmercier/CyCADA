@@ -244,7 +244,9 @@ cdef extern from "cuda.h":
     ############################
     cdef:
         CUresult cuCtxCreate(CUcontext *, unsigned int, CUdevice) nogil
+        CUresult cuCtxGetApiVersion(CUcontext, unsigned int *) nogil
         CUresult cuCtxDestroy(CUcontext) nogil
+        CUresult cuCtxGetCurrent(CUcontext *) nogil
         CUresult cuCtxPopCurrent(CUcontext *) nogil
         CUresult cuCtxPushCurrent(CUcontext) nogil
         CUresult cuCtxDetach(CUcontext) nogil
