@@ -1,3 +1,29 @@
+# Copyright (c) 2010-2012 Jean-Pascal Mercier
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+#
+#
+#
 cmake_minimum_required (VERSION 2.8)
 
 project (CyCuda)
@@ -14,7 +40,7 @@ FIND_PACKAGE(CUDA REQUIRED)
 FIND_PACKAGE(PythonInterp 2.7 COMPONENTS numpy REQUIRED)
 
 SET (CyCuda_MODULE_SRCS "${CyCuda_SOURCE_DIR}/src/cycuda/__init__.py")
-SET (CMAKE_C_FLAGS  "-Wall -Wno-unused-value -Wno-unused-function")
+SET (CMAKE_C_FLAGS  "-Wall -Wno-unused-function -g")
 
 set (CYTHON_FLAGS -I${PROJECT_SOURCE_DIR}/src/cython/)
 
@@ -40,6 +66,12 @@ SET_TARGET_PROPERTIES(cycuda/core PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE
 CYTHON_ADD_MODULE(cycuda/numpycmd ${PROJECT_SOURCE_DIR}/src/cython/cycuda/numpycmd.pyx)
 TARGET_LINK_LIBRARIES(cycuda/numpycmd "cuda")
 
+CYTHON_ADD_MODULE(cycuda/cmd ${PROJECT_SOURCE_DIR}/src/cython/cycuda/cmd.pyx)
+TARGET_LINK_LIBRARIES(cycuda/cmd "cuda")
+
+CYTHON_ADD_MODULE(cycuda/numpy_ext ${PROJECT_SOURCE_DIR}/src/cython/cycuda/numpy_ext.pyx)
+TARGET_LINK_LIBRARIES(cycuda/numpy_ext "cuda")
+
 
 set(CyCuda_MODULE "")
 FOREACH(infile ${CyCuda_MODULE_SRCS})
@@ -55,6 +87,8 @@ ADD_CUSTOM_TARGET(cy DEPENDS ${CyCuda_MODULE})
 
 ADD_DEPENDENCIES(cycuda/core cy)
 ADD_DEPENDENCIES(cycuda/numpycmd cy)
+ADD_DEPENDENCIES(cycuda/cmd cy)
+ADD_DEPENDENCIES(cycuda/numpy_ext cy)
 
 
 #PYTHON_ADD_MODULE(cycuda ${PROJECT_SOURCE_DIR}/src/cycuda/__init__.py)

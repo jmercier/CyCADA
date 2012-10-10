@@ -1,3 +1,28 @@
+# Copyright (c) 2010-2012 Jean-Pascal Mercier
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+#
+#
 
 cdef extern from "cuda.h":
     ############################
@@ -5,6 +30,11 @@ cdef extern from "cuda.h":
     #   Enums
     #
     ############################
+
+    ctypedef enum:
+        CU_LAUNCH_PARAM_BUFFER_POINTER
+        CU_LAUNCH_PARAM_BUFFER_SIZE
+        CU_LAUNCH_PARAM_END
 
     ctypedef enum:
         CU_MEMHOSTALLOC_PORTABLE
@@ -324,19 +354,34 @@ cdef extern from "cuda.h":
     #   Execution Control
     #
     ############################
-    cdef CUresult cuFuncGetAttribute(int *, CUfunction_attribute, CUfunction) nogil
-    cdef CUresult cuParamSetv(CUfunction, int, void *, unsigned int) nogil
-    cdef CUresult cuFuncSetSharedSize(CUfunction, unsigned int) nogil
-    cdef CUresult cuParamSetSize(CUfunction, unsigned int) nogil
-    cdef CUresult cuLaunchGrid(CUfunction, int, int) nogil
-    cdef CUresult cuFuncSetBlockShape(CUfunction, int, int, int) nogil
-    cdef CUresult cuLaunchGridAsync(CUfunction, int, int, CUstream) nogil
+    cdef:
+        CUresult cuFuncGetAttribute(int *, CUfunction_attribute, CUfunction) nogil
+        CUresult cuParamSetv(CUfunction, int, void *, unsigned int) nogil
+        CUresult cuFuncSetSharedSize(CUfunction, unsigned int) nogil
+        CUresult cuParamSetSize(CUfunction, unsigned int) nogil
+        CUresult cuLaunchGrid(CUfunction, int, int) nogil
+        CUresult cuFuncSetBlockShape(CUfunction, int, int, int) nogil
+        CUresult cuLaunchGridAsync(CUfunction, int, int, CUstream) nogil
 
-    cdef CUresult cuModuleLoad(CUmodule *, char *) nogil
-    cdef CUresult cuModuleLoadDataEx(CUmodule *, void *, unsigned int, CUjit_option *, void **)
-    cdef CUresult cuModuleUnload(CUmodule) nogil
-    cdef CUresult cuModuleGetFunction(CUfunction *, CUmodule, char *) nogil
-    cdef CUresult cuModuleGetTexRef (CUtexref *, CUmodule, char *name) nogil
+        CUresult cuModuleLoad(CUmodule *, char *) nogil
+        CUresult cuModuleLoad(CUmodule *, char *) nogil
+        CUresult cuModuleLoadDataEx(CUmodule *, void *, unsigned int, CUjit_option *, void **)
+        CUresult cuModuleUnload(CUmodule) nogil
+        CUresult cuModuleGetFunction(CUfunction *, CUmodule, char *) nogil
+        CUresult cuModuleGetTexRef (CUtexref *, CUmodule, char *name) nogil
+
+        CUresult cuLaunchKernel (CUfunction f,
+                                 unsigned intgridDimX,
+                                 unsigned int gridDimY,
+                                 unsigned int gridDimZ,
+                                 unsigned int blockDimX,
+                                 unsigned int blockDimY,
+                                 unsigned int blockDimZ,
+                                 unsigned int sharedMemBytes,
+                                 CUstream hStream,
+                                 void ** kernelParams,
+                                 void ** extra)
+
 
     ############################
     #
