@@ -232,6 +232,10 @@ cdef extern from "cuda.h":
         pass
     ctypedef struct CUtexref:
         pass
+    ctypedef struct CUsurfref:
+        pass
+    ctypedef struct CUgraphicsResource:
+        pass
 
     ctypedef struct CUDA_MEMCPY2D:
         unsigned int srcXInBytes
@@ -369,6 +373,8 @@ cdef extern from "cuda.h":
         CUresult cuModuleUnload(CUmodule) nogil
         CUresult cuModuleGetFunction(CUfunction *, CUmodule, char *) nogil
         CUresult cuModuleGetTexRef (CUtexref *, CUmodule, char *name) nogil
+        CUresult cuModuleGetSurfRef (CUsurfref *, CUmodule, char *name) nogil
+        CUresult cuModuleGetGlobal (CUdeviceptr *, size_t *, CUmodule, char *name) nogil
 
         CUresult cuLaunchKernel (CUfunction f,
                                  unsigned intgridDimX,
@@ -399,13 +405,24 @@ cdef extern from "cuda.h":
     cdef CUresult cuTexRefSetAddressMode (CUtexref, int, CUaddress_mode) nogil
 
 
+    cdef CUresult cuGraphicsUnregisterResource (CUgraphicsResource resource)
+    cdef CUresult cuGraphicsResourceSetMapFlags (CUgraphicsResource resource, unsigned int flags)
+    cdef CUresult cuGraphicsResourceGetMappedPointer ( CUdeviceptr * pDevPtr, size_t * pSize, CUgraphicsResourceresource )
+    cdef CUresult cuGraphicsUnmapResources(unsigned int count, CUgraphicsResource *resources, CUstream hStream )
+
+
 cdef extern from "GL/gl.h":
     pass
 
 
 cdef extern from "cudaGL.h":
+
+
+    ctypedef unsigned int   GLuint
+
     cdef:
         CUresult cuGLCtxCreate(CUcontext *, unsigned int, CUdevice) nogil
+        CUresult cuGraphicsGLRegisterBuffer(CUgraphicsResource *, GLuint buf, unsigned int Flags)
 
 
 

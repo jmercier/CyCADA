@@ -72,6 +72,9 @@ TARGET_LINK_LIBRARIES(cycuda/cmd "cuda")
 CYTHON_ADD_MODULE(cycuda/numpy_ext ${PROJECT_SOURCE_DIR}/src/cython/cycuda/numpy_ext.pyx)
 TARGET_LINK_LIBRARIES(cycuda/numpy_ext "cuda")
 
+CYTHON_ADD_MODULE(cycuda/opengl ${PROJECT_SOURCE_DIR}/src/cython/cycuda/opengl.pyx)
+TARGET_LINK_LIBRARIES(cycuda/opengl "cuda")
+
 
 set(CyCuda_MODULE "")
 FOREACH(infile ${CyCuda_MODULE_SRCS})
@@ -89,6 +92,7 @@ ADD_DEPENDENCIES(cycuda/core cy)
 ADD_DEPENDENCIES(cycuda/numpycmd cy)
 ADD_DEPENDENCIES(cycuda/cmd cy)
 ADD_DEPENDENCIES(cycuda/numpy_ext cy)
+ADD_DEPENDENCIES(cycuda/opengl cy)
 
 
 #PYTHON_ADD_MODULE(cycuda ${PROJECT_SOURCE_DIR}/src/cycuda/__init__.py)

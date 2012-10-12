@@ -160,8 +160,39 @@ cpdef init(unsigned int flags = 0):
 
 # ------------------------------------------------------------------------------
 cdef LLModule _LLModule_factory(LLContext context, char *content):
-    cdef libcuda.CUmodule handle
-    CudaSafeCall(libcuda.cuModuleLoadDataEx(&handle, content, 0, NULL, NULL))
+    cdef:
+        libcuda.CUmodule handle
+        libcuda.CUjit_option options[32]
+        void *optionValues[32]
+        char info_buffer[1024]
+        char error_buffer[1024]
+        unsigned int error_buffer_size = 1024
+        unsigned int info_buffer_size = 1024
+        float wall_time = 0
+
+    options[0] = libcuda.CU_JIT_INFO_LOG_BUFFER
+    optionValues[0] = <void *>info_buffer;
+
+    options[1] = libcuda.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES
+    optionValues[1] = <void *>&info_buffer_size
+
+    options[2] = libcuda.CU_JIT_ERROR_LOG_BUFFER
+    optionValues[2] = <void *>error_buffer;
+
+    options[3] = libcuda.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES
+    optionValues[3] = <void *>&error_buffer_size
+
+    options[4] = libcuda.CU_JIT_WALL_TIME
+    optionValues[4] = <void *>&wall_time
+
+    options[5] = libcuda.CU_JIT_TARGET_FROM_CUCONTEXT
+    optionValues[5] = <void *>NULL
+
+    #options[6] = libcuda.CU_JIT_OPTIMIZATION_LEVEL
+    #optionValues[6] = <void *>&optimization_level
+
+
+    CudaSafeCall(libcuda.cuModuleLoadDataEx(&handle, content, 6, options, optionValues))
 
     cdef LLModule module = LLModule.__new__(LLModule)
     module._ctx     = context
@@ -180,6 +211,43 @@ cdef LLFunction _LLFunction_factory(LLModule module, bytes name):
     return function
 # ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+cdef LLTexRef _LLTexRef_factory(LLModule module, bytes name):
+    cdef libcuda.CUtexref handle
+    CudaSafeCall(libcuda.cuModuleGetTexRef(&handle, module._handle, name))
+
+    cdef LLTexRef texture = LLTexRef.__new__(LLTexRef)
+    texture._handle = handle
+    texture._mod = module
+    return texture
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+cdef LLSurfRef _LLSurfRef_factory(LLModule module, bytes name):
+    cdef libcuda.CUsurfref handle
+    CudaSafeCall(libcuda.cuModuleGetSurfRef(&handle, module._handle, name))
+
+    cdef LLSurfRef surface = LLSurfRef.__new__(LLSurfRef)
+    surface._handle = handle
+    surface._mod = module
+    return surface
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+cdef LLGlobal _LLGlobal_factory(LLModule module, bytes name):
+    cdef:
+        libcuda.CUdeviceptr handle
+        size_t size
+
+    CudaSafeCall(libcuda.cuModuleGetGlobal(&handle, &size, module._handle, name))
+
+    cdef LLGlobal g = LLGlobal.__new__(LLGlobal)
+    g._handle = handle
+    g._mod = module
+    g._size = size
+
+    return g
+# ------------------------------------------------------------------------------
 ###############################################################################
 #
 # Context Section
@@ -410,6 +478,7 @@ cdef class LLCommand(object):
 #
 #######################################
 
+
 # ------------------------------------------------------------------------------
 cdef class LLBuffer(object):
     cdef libcuda.CUdeviceptr device(self) except *:
@@ -488,6 +557,12 @@ class Module(object):
         if name not in self.__functions__:
             self.__functions__[name] = Function(self.__mod__, name)
         return self.__functions__[name]
+
+    def get_texref(self, bytes name):
+        pass
+
+    def get_surfref(self, bytes name):
+        pass
 
 cdef class LLFunction(object):
     pass

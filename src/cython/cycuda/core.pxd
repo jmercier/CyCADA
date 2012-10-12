@@ -55,7 +55,6 @@ cdef class LLCommand(object):
 # ------------------------------------------------------------------------------
 cdef class LLBuffer(object):
     cdef:
-        LLContext           _ctx
         unsigned int        _size
 
         libcuda.CUdeviceptr device(self) except *
@@ -65,12 +64,14 @@ cdef class LLBuffer(object):
 cdef class LLDeviceBuffer(LLBuffer):
     cdef:
         libcuda.CUdeviceptr _handle
+        LLContext           _ctx
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
 cdef class LLHostBuffer(LLBuffer):
     cdef:
         void *              _handle
+        LLContext           _ctx
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -87,8 +88,37 @@ cdef class LLFunction(object):
         LLModule            _mod
 # ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
 cdef class LLParameter:
     cdef char *compact(self, char *ptr, object value)
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+cdef class LLTexRef:
+    cdef:
+        libcuda.CUtexref    _handle
+        LLModule            _mod
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+cdef class LLSurfRef:
+    cdef:
+        libcuda.CUsurfref   _handle
+        LLModule            _mod
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+cdef class LLGlobal(LLBuffer):
+    cdef:
+        libcuda.CUdeviceptr     _handle
+        LLModule                _mod
+# ------------------------------------------------------------------------------
+
+cdef class LLGraphicsResource(LLBuffer):
+    cdef libcuda.CUgraphicsResource _handle
+    cdef libcuda.CUdeviceptr device(self) except *
+    cdef libcuda.CUdeviceptr _device
+
 
 # ------------------------------------------------------------------------------
 cdef:
@@ -98,6 +128,9 @@ cdef:
     LLHostBuffer _LLHostBuffer_factory(LLContext context, unsigned int size)
     LLModule _LLModule_factory(LLContext context, char *content)
     LLFunction _LLFunction_factory(LLModule module, bytes name)
+    LLTexRef _LLTexRef_factory(LLModule module, bytes name)
+    LLSurfRef _LLSurfRef_factory(LLModule module, bytes name)
+    LLGlobal _LLGlobal_factory(LLModule module, bytes name)
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
