@@ -326,6 +326,7 @@ cdef extern from "cuda.h":
         CUresult cuMemcpy(CUdeviceptr, CUdeviceptr, size_t)
         CUresult cuMemcpyAsync(CUdeviceptr , CUdeviceptr , size_t , CUstream )
         CUresult cuMemHostGetDevicePointer(CUdeviceptr *, void *, unsigned int)
+        CUresult cuMemcpyPeerAsync(CUdeviceptr, CUcontext, CUdeviceptr, CUcontext, size_t, CUstream)
 
 
     ############################
@@ -407,8 +408,9 @@ cdef extern from "cuda.h":
 
     cdef CUresult cuGraphicsUnregisterResource (CUgraphicsResource resource)
     cdef CUresult cuGraphicsResourceSetMapFlags (CUgraphicsResource resource, unsigned int flags)
-    cdef CUresult cuGraphicsResourceGetMappedPointer ( CUdeviceptr * pDevPtr, size_t * pSize, CUgraphicsResourceresource )
+    cdef CUresult cuGraphicsResourceGetMappedPointer ( CUdeviceptr * pDevPtr, size_t * pSize, CUgraphicsResource)
     cdef CUresult cuGraphicsUnmapResources(unsigned int count, CUgraphicsResource *resources, CUstream hStream )
+    cdef CUresult cuGraphicsMapResources(unsigned int count, CUgraphicsResource *resources, CUstream hStream )
 
 
 cdef extern from "GL/gl.h":
@@ -416,8 +418,6 @@ cdef extern from "GL/gl.h":
 
 
 cdef extern from "cudaGL.h":
-
-
     ctypedef unsigned int   GLuint
 
     cdef:

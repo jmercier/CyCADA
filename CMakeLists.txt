@@ -26,12 +26,12 @@
 #
 cmake_minimum_required (VERSION 2.8)
 
-project (CyCuda)
+project (CyCADA)
 
-set (CyCuda_VERSION_MAJOR 0)
-set (CyCuda_VERSION_MINOR 1)
+set (CyCADA_VERSION_MAJOR 0)
+set (CyCADA_VERSION_MINOR 1)
 
-set (CMAKE_MODULE_PATH ${CyCuda_SOURCE_DIR}/cmake)
+set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set (CMAKE_C_FLAGS "-O3 -DNDEBUG")
 
@@ -39,7 +39,7 @@ FIND_PACKAGE(Cython REQUIRED)
 FIND_PACKAGE(CUDA REQUIRED)
 FIND_PACKAGE(PythonInterp 2.7 COMPONENTS numpy REQUIRED)
 
-SET (CyCuda_MODULE_SRCS "${CyCuda_SOURCE_DIR}/src/cycuda/__init__.py")
+SET (CyCADA_MODULE_SRCS  "${CMAKE_CURRENT_SOURCE_DIR}/src/cycada/__init__.py")
 SET (CMAKE_C_FLAGS  "-Wall -Wno-unused-function -g")
 
 set (CYTHON_FLAGS -I${PROJECT_SOURCE_DIR}/src/cython/)
@@ -47,64 +47,63 @@ set (CYTHON_FLAGS -I${PROJECT_SOURCE_DIR}/src/cython/)
 # SHOULD FIND A BETTER WAY TO FIND THIS DIRECTORY
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS}  /usr/lib/python2.7/site-packages/numpy/core/include/)
 
-#CYTHON_ADD_MODULE(cycuda/core core  core.c)
-#CYTHON_ADD_MODULE(cycuda/fft fft fft.c)
-#CYTHON_ADD_MODULE(cycuda/random random random.c)
-
-#add_custom_target(cycuda COMMAND cp -r ${PROJECT_SOURCE_DIR}/cycuda cycuda DEPENDS ${CyCuda_MODULE})
+#add_custom_target(cycada COMMAND cp -r ${PROJECT_SOURCE_DIR}/cycada cycada DEPENDS ${CyCADA_MODULE})
 
 
 
-#TARGET_LINK_LIBRARIES(cycuda/garray "cuda")
-#SET_TARGET_PROPERTIES(cycuda/garray PROPERTIES LINK_FLAGS "-L/usr/lib/nvidia-current")
-#ADD_DEPENDENCIES(cycuda/garray cycuda)
+#TARGET_LINK_LIBRARIES(cycada/garray "cuda")
+#SET_TARGET_PROPERTIES(cycada/garray PROPERTIES LINK_FLAGS "-L/usr/lib/nvidia-current")
+#ADD_DEPENDENCIES(cycada/garray cycada)
 
-CYTHON_ADD_MODULE(cycuda/core ${PROJECT_SOURCE_DIR}/src/cython/cycuda/core.pyx)
-TARGET_LINK_LIBRARIES(cycuda/core "cuda")
-SET_TARGET_PROPERTIES(cycuda/core PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE_DIRS}")
+CYTHON_ADD_MODULE(cycada/core ${PROJECT_SOURCE_DIR}/src/cython/cycada/core.pyx)
+TARGET_LINK_LIBRARIES(cycada/core "cuda")
+SET_TARGET_PROPERTIES(cycada/core PROPERTIES INCLUDE_DIRECTORIES "${CUDA_INCLUDE_DIRS}")
 
-CYTHON_ADD_MODULE(cycuda/numpycmd ${PROJECT_SOURCE_DIR}/src/cython/cycuda/numpycmd.pyx)
-TARGET_LINK_LIBRARIES(cycuda/numpycmd "cuda")
+CYTHON_ADD_MODULE(cycada/numpycmd ${PROJECT_SOURCE_DIR}/src/cython/cycada/numpycmd.pyx)
+TARGET_LINK_LIBRARIES(cycada/numpycmd "cuda")
 
-CYTHON_ADD_MODULE(cycuda/cmd ${PROJECT_SOURCE_DIR}/src/cython/cycuda/cmd.pyx)
-TARGET_LINK_LIBRARIES(cycuda/cmd "cuda")
+CYTHON_ADD_MODULE(cycada/cmd ${PROJECT_SOURCE_DIR}/src/cython/cycada/cmd.pyx)
+TARGET_LINK_LIBRARIES(cycada/cmd "cuda")
 
-CYTHON_ADD_MODULE(cycuda/numpy_ext ${PROJECT_SOURCE_DIR}/src/cython/cycuda/numpy_ext.pyx)
-TARGET_LINK_LIBRARIES(cycuda/numpy_ext "cuda")
+CYTHON_ADD_MODULE(cycada/numpy_ext ${PROJECT_SOURCE_DIR}/src/cython/cycada/numpy_ext.pyx)
+TARGET_LINK_LIBRARIES(cycada/numpy_ext "cuda")
 
-CYTHON_ADD_MODULE(cycuda/opengl ${PROJECT_SOURCE_DIR}/src/cython/cycuda/opengl.pyx)
-TARGET_LINK_LIBRARIES(cycuda/opengl "cuda")
+CYTHON_ADD_MODULE(cycada/opengl ${PROJECT_SOURCE_DIR}/src/cython/cycada/opengl.pyx)
+TARGET_LINK_LIBRARIES(cycada/opengl "cuda")
 
+CYTHON_ADD_MODULE(cycada/manager ${PROJECT_SOURCE_DIR}/src/cython/cycada/manager.pyx)
+TARGET_LINK_LIBRARIES(cycada/manager "cuda")
 
-set(CyCuda_MODULE "")
-FOREACH(infile ${CyCuda_MODULE_SRCS})
+set(CyCADA_MODULE "")
+FOREACH(infile ${CyCADA_MODULE_SRCS})
     GET_FILENAME_COMPONENT(filename ${infile} NAME)
-    set(outfile ${CMAKE_CURRENT_BINARY_DIR}/cycuda/${filename})
+    set(outfile ${CMAKE_CURRENT_BINARY_DIR}/cycada/${filename})
     add_custom_command(
         OUTPUT ${outfile}
         COMMAND ${CMAKE_COMMAND} -E copy ${infile} ${outfile}
         MAIN_DEPENDENCY ${infile})
-    LIST(APPEND CyCuda_MODULE ${outfile})
-ENDFOREACH(infile ${CyCuda_MODULE})
-ADD_CUSTOM_TARGET(cy DEPENDS ${CyCuda_MODULE})
+    LIST(APPEND CyCADA_MODULE ${outfile})
+ENDFOREACH(infile ${CyCADA_MODULE})
+ADD_CUSTOM_TARGET(cy DEPENDS ${CyCADA_MODULE})
 
-ADD_DEPENDENCIES(cycuda/core cy)
-ADD_DEPENDENCIES(cycuda/numpycmd cy)
-ADD_DEPENDENCIES(cycuda/cmd cy)
-ADD_DEPENDENCIES(cycuda/numpy_ext cy)
-ADD_DEPENDENCIES(cycuda/opengl cy)
-
-
-#PYTHON_ADD_MODULE(cycuda ${PROJECT_SOURCE_DIR}/src/cycuda/__init__.py)
+ADD_DEPENDENCIES(cycada/core cy)
+ADD_DEPENDENCIES(cycada/numpycmd cy)
+ADD_DEPENDENCIES(cycada/cmd cy)
+ADD_DEPENDENCIES(cycada/numpy_ext cy)
+ADD_DEPENDENCIES(cycada/opengl cy)
+ADD_DEPENDENCIES(cycada/manager cy)
 
 
-#TARGET_LINK_LIBRARIES(cycuda/fft "cuda" ${CUDA_CUFFT_LIBRARIES})
-#SET_TARGET_PROPERTIES(cycuda/fft PROPERTIES LINK_FLAGS "-L/usr/lib/nvidia-current")
-#ADD_DEPENDENCIES(cycuda/fft cycuda)
+#PYTHON_ADD_MODULE(cycada ${PROJECT_SOURCE_DIR}/src/cycada/__init__.py)
+
+
+#TARGET_LINK_LIBRARIES(cycada/fft "cuda" ${CUDA_CUFFT_LIBRARIES})
+#SET_TARGET_PROPERTIES(cycada/fft PROPERTIES LINK_FLAGS "-L/usr/lib/nvidia-current")
+#ADD_DEPENDENCIES(cycada/fft cycada)
 #
-#TARGET_LINK_LIBRARIES(cycuda/random "cuda")
-#SET_TARGET_PROPERTIES(cycuda/random PROPERTIES LINK_FLAGS "-L/usr/lib/nvidia-current")
-#ADD_DEPENDENCIES(cycuda/random cycuda)
+#TARGET_LINK_LIBRARIES(cycada/random "cuda")
+#SET_TARGET_PROPERTIES(cycada/random PROPERTIES LINK_FLAGS "-L/usr/lib/nvidia-current")
+#ADD_DEPENDENCIES(cycada/random cycada)
 
 
 
