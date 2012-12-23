@@ -1,1 +1,1 @@
-nvcc --ptx ./test.cu --compiler-bindir ~/devel/vimedix/git/code/tool_src/DopplerSimulation/cc/ -O3
+nvcc --ptx ./test.cu --compiler-bindir ~/bin/nvcc-cc -O3
